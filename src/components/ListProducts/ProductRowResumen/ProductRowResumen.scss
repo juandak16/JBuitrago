@@ -1,0 +1,25 @@
+.input-count {
+  margin: 0;
+  width: 30px;
+  text-align: center;
+  height: 23px;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+.modal-infopedido {
+  margin: 0;
+}
+
+.button-action-info {
+  font-size: 11px;
+  padding: 0px 5px;
+  height: 20px;
+  border-radius: 100%;
+  box-shadow: 1px 2px 3px #666;
+}

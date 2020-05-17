@@ -1,0 +1,30 @@
+.input-count {
+  margin: 0;
+  width: 30px;
+  text-align: center;
+  height: 23px;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+.modal-infopedido {
+  margin: 0;
+}
+.actions-buttons-info {
+  text-align: center;
+}
+.button-action-info {
+  font-size: 11px;
+  padding: 0;
+  height: 18px;
+  border-radius: 100%;
+  box-shadow: 0px 1px 3px #8a8787;
+  width: 17px;
+  background-color: #e05757;
+  border-color: #d84343;
+}

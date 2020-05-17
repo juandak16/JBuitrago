@@ -1,0 +1,53 @@
+.bold {
+  font-weight: 600;
+}
+.footer-resumenpedido {
+  display: flex;
+  flex-direction: column;
+  .detail-resumenPedido {
+    height: 115px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 10px;
+    width: 100%;
+    .container-client-typepay {
+      .detail {
+        margin-bottom: 5px;
+        p {
+          font-size: 16px;
+          margin: 0;
+        }
+      }
+    }
+    .container-total {
+      text-align: right;
+      .subtotal {
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+      .iva {
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+      .total {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .buttons-infopedido {
+    margin: 0;
+    width: 200px;
+    display: flex;
+    justify-content: space-around;
+  }
+}
+
+@media (min-width: 576px) {
+  .footer-resumenpedido {
+    .detail-resumenPedido {
+      width: 95%;
+    }
+  }
+}

@@ -1,0 +1,28 @@
+// Here you can add other styles
+@import "../components/ListProducts/ProductRowInfo/ProductRowInfo.scss";
+@import "../components/ListProducts/ListProducts.scss";
+@import "../components/ListProducts/InfoPedido/InfoPedido.scss";
+@import "../components/ListProducts/ProductRow/ProductRow.scss";
+@import "../components/ListProducts/ResumenPedido/ResumenPedido.scss";
+
+//listproduct
+
+//nav
+.icon-user {
+  font-size: 22px;
+  margin-right: 25px;
+}
+.title-list {
+  font-size: 25px;
+}
+.title-user {
+  margin: 0;
+  margin-right: 10px;
+}
+
+//DefaultLayout
+@media (max-width: 600px) {
+  .container-body {
+    padding: 0 !important;
+  }
+}
