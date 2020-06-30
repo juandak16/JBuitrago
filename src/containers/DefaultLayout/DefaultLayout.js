@@ -3,11 +3,15 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import { Container } from "reactstrap";
 
 import { ListProducts } from "../../components/ListProducts/ListProducts";
+import { ListItems } from "../../components/Items/ListItems";
+import { ListClients } from "../../components/Clients/ListClients";
 import { ListOrders } from "../../components/ListOrders/ListOrders";
-
 import { AppHeader } from "@coreui/react";
 // routes config
 import routes from "../../routes";
+/*const ListProducts = React.lazy(() =>
+  import("../../components/ListProducts/ListProducts")
+);*/
 
 const DefaultHeader = React.lazy(() => import("./DefaultHeader"));
 
@@ -46,6 +50,7 @@ class DefaultLayout extends Component {
                       />
                     ) : null;
                   })}
+
                   <Route
                     exact
                     path="/notaentrega"
@@ -69,6 +74,18 @@ class DefaultLayout extends Component {
                     path="/pedidosff"
                     name="Pedidos Factura Fiscal"
                     render={(props) => <ListOrders {...props} list_id="2" />}
+                  />
+                  <Route
+                    exact
+                    path="/productos"
+                    name="Productos"
+                    render={(props) => <ListItems />}
+                  />
+                  <Route
+                    exact
+                    path="/clientes"
+                    name="Clientes"
+                    render={(props) => <ListClients />}
                   />
                   <Redirect from="/" to="/notaentrega" />
                 </Switch>

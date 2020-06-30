@@ -1,45 +1,50 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
-  Badge,
   Table,
-  Card,
-  CardBody,
-  CardHeader,
-  Col,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
-  Row,
 } from "reactstrap";
 import ProductRowInfo from "../ProductRowInfo/ProductRowInfo";
 import { gql } from "apollo-boost";
 import { useQuery } from "@apollo/react-hooks";
 import { GET_INFO_PEDIDO } from "../../../constants/queries";
 import ResumenPedido from "../ResumenPedido/ResumenPedido";
+import CrudClient from "../../Clients/CrudClient/CrudClient";
 
 const InfoPedido = (props) => {
-  const { loading, error, data } = useQuery(GET_INFO_PEDIDO(gql));
+  const { loading, error, data, refetch } = useQuery(GET_INFO_PEDIDO(gql));
   const { isOpenModal, toggleModal, list } = props;
   //const { pedidoObject, setPedidoObject } = useState(null);
   const selectClient = useRef(null);
   const selectTypePay = useRef(null);
+  const [createClient, setCreateClient] = useState(false);
   const [isOpenResumenPedido, setIsOpenResumenPedido] = useState(false);
   const [newList, setNewList] = useState([]);
 
   useEffect(() => {
     setNewList(list.map(JSON.parse));
+    console.log(newList);
   }, []);
 
-  let pedidoObject = new Object();
+  let pedidoObject = {};
 
   const toggleResumenPedido = () => {
     setIsOpenResumenPedido(!isOpenResumenPedido);
   };
 
+  const toggleCreateClient = () => {
+    setCreateClient(!createClient);
+  };
+
   const generarResumen = () => {
-    if (selectClient.current.value != 0 && selectTypePay.current.value != 0) {
+    if (
+      selectClient.current.value != 0 &&
+      selectTypePay.current.value != 0 &&
+      newList[0]
+    ) {
       pedidoObject.client_id = selectClient.current.value;
       pedidoObject.typePay_id = selectTypePay.current.value;
       pedidoObject.list = newList;
@@ -49,8 +54,8 @@ const InfoPedido = (props) => {
     }
   };
 
-  const deleteItem = (item) => {
-    list.splice(list.indexOf(item), 1);
+  const deleteItem = (index) => {
+    newList.splice(index, 1);
   };
 
   if (loading) return <p>Loading...</p>;
@@ -98,6 +103,14 @@ const InfoPedido = (props) => {
                 list={newList}
               />
             ))}
+            {createClient ? (
+              <CrudClient
+                isOpenModal={createClient}
+                toggleModal={toggleCreateClient}
+                //client={null}
+                refetchClient={refetch}
+              />
+            ) : null}
           </tbody>
         </Table>
       </ModalBody>
@@ -125,7 +138,10 @@ const InfoPedido = (props) => {
                 ))}
               </select>
             </div>
-            <Button className="btn btn-success btn-square btn-add-infopedido">
+            <Button
+              className="btn btn-success btn-square btn-add-infopedido"
+              onClick={toggleCreateClient}
+            >
               Agregar
             </Button>
           </div>
@@ -151,9 +167,6 @@ const InfoPedido = (props) => {
                 ))}
               </select>
             </div>
-            <Button className="btn btn-success btn-square btn-add-infopedido">
-              Agregar
-            </Button>
           </div>
         </div>
         <div className="buttons-infopedido">
@@ -173,11 +186,15 @@ const InfoPedido = (props) => {
           </Button>
         </div>
       </ModalFooter>
+      {console.log(newList)}
     </Modal>
-  ) : selectClient.current.value != 0 && selectTypePay.current.value != 0 ? (
+  ) : selectClient.current.value != 0 &&
+    selectTypePay.current.value != 0 &&
+    newList[0] ? (
     <ResumenPedido
       isOpenModal={isOpenModal}
       toggleModal={toggleResumenPedido}
+      toggleModalInfo={toggleModal}
       pedidoObject={generarResumen()}
     />
   ) : (

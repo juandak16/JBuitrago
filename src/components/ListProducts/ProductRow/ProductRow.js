@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 const ProductRow = (props) => {
-  const product = props.product;
+  const { product, clear, toggleAdd } = props;
   const [isProductOnCar, setIsProductOnCar] = useState(false);
 
   useEffect(() => {
@@ -32,6 +32,7 @@ const ProductRow = (props) => {
       <td className="capitalize center-tab">{product.description}</td>
       <td className="capitalize center-tab">{product.trademark}</td>
       <td className="center-tab">${product.price.toFixed(2)}</td>
+
       <td className="actions-buttons">
         {!isProductOnCar ? (
           <button
@@ -50,10 +51,6 @@ const ProductRow = (props) => {
             Eliminar
           </button>
         )}
-
-        <button type="button" className="btn btn-warning button-action">
-          Editar
-        </button>
       </td>
     </tr>
   );

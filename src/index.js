@@ -7,20 +7,15 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-/*
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-admin.initializeApp();
+import { firebaseInstance } from "./firebase";
+import firebaseConfig from "./firebase";
+var admin = require("firebase-admin");
 
-const onRedirectCallback = (appState) => {
-  window.history.replaceState(
-    {},
-    document.title,
-    appState && appState.targetUrl
-      ? appState.targetUrl
-      : window.location.pathname
-  );
-};
-*/
+firebaseInstance.initializeApp(firebaseConfig);
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  databaseURL: "https://jbuitrago-972b4.firebaseio.com",
+});
+
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.unregister();

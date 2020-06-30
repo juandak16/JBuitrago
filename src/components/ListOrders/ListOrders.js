@@ -1,51 +1,91 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardBody, CardHeader, Col, Row, Table } from "reactstrap";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Col,
+  Row,
+  Table,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+} from "reactstrap";
 import { gql } from "apollo-boost";
 import { useQuery } from "@apollo/react-hooks";
-import { GET_PRODUCTS } from "../../constants/queries";
-//import InfoPedido from "./InfoPedido/InfoPedido";
-//import ProductRow from "./ProductRow/ProductRow";
+import { GET_ORDERS } from "../../constants/queries";
+import OrderRow from "./OrderRow/OrderRow";
+import DetailOrder from "./DetailOrder/DetailOrder";
+import debounce from "lodash/debounce";
 
 export const ListOrders = (props) => {
-  const { loading, error, data } = useQuery(GET_PRODUCTS(gql, props.list_id));
-  const [clear, setClear] = useState(false);
-  const [isOpenModal, setIsOpenModal] = useState(false);
+  const { list_id } = props;
+  const [filterValue, setFilterValue] = useState(null);
+  const [searchValue, setSearchValue] = useState(null);
+  const [viewDetailOrder, setViewDetailOrder] = useState(false);
+  const { loading, error, data, refetch } = useQuery(
+    GET_ORDERS(gql, list_id, filterValue, searchValue)
+  );
+  const [dropdownState, setDropdownState] = useState(false);
+  const [stateList, setStateList] = useState([]);
+  const inputSearch = useRef(null);
+  useEffect(() => {
+    if (data) getFilter();
+  }, [data]);
 
-  const generarPedido = () => {
-    setIsOpenModal(!isOpenModal);
+  const getFilter = () => {
+    let array = [];
+
+    if (!stateList.length) {
+      let band;
+      order.map((item) => {
+        band = false;
+
+        array.map((state) => {
+          if (item.status_order.name === state) {
+            band = true;
+          }
+        });
+
+        if (band === false) {
+          array.push(item.status_order.name);
+        }
+      });
+      setStateList(array);
+    }
   };
 
-  const cleanLocalStorage = () => {
-    localStorage.clear();
-    Object.keys(localStorage).map((item, index) => {
-      const array = item.split("-");
-      if (array[array.length - 1] === props.list_id) {
-        localStorage.removeItem(item);
-      }
-    });
-    setClear(!clear);
+  const filter = (item) => {
+    setFilterValue(item);
+    refetch();
+    toggleDropDown();
+  };
+  const search = () => {
+    setSearchValue(inputSearch.current.value);
+    refetch();
+    setTimeout(() => {
+      if (inputSearch.current) inputSearch.current.focus();
+    }, 1000);
   };
 
-  const calcuList = () => {
-    let list = [];
-    let product;
-    Object.values(localStorage).map((item, index) => {
-      product = JSON.parse(item);
-      if (product.type_list_id == props.list_id) {
-        list.push(item);
-      }
-    });
-    return list;
+  const toggleDropDown = () => {
+    setDropdownState(!dropdownState);
   };
-
+  const [order_id, setOrder_id] = useState(0);
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
+  const { order } = data;
+
+  const toggleViewDetail = (id) => {
+    setOrder_id(id);
+    setViewDetailOrder(!viewDetailOrder);
+  };
 
   return (
     <div className="animated fadeIn" key={loading}>
       <Row>
         <Col xl={12}>
-          <Card>
+          <Card className="card-infopedido">
             <CardHeader>
               {props.list_id === "1" ? (
                 <h2 className="title-list">Pedidos por Nota de Entrega</h2>
@@ -53,17 +93,42 @@ export const ListOrders = (props) => {
                 <h2 className="title-list">Pedidos por Factura Fiscal</h2>
               )}
             </CardHeader>
-            <CardBody className="cardbody-listproducts">
-              {/*isOpenModal ? (
-                <InfoPedido
-                  isOpenModal={isOpenModal}
-                  toggleModal={generarPedido}
-                  list={calcuList()}
+            <CardBody className="cardbody-orderproducts">
+              {viewDetailOrder ? (
+                <DetailOrder
+                  isOpenModal={viewDetailOrder}
+                  toggleModal={toggleViewDetail}
+                  order_id={order_id}
+                  //order_id="93"
                 />
-              ) : null*/}
+              ) : null}
               <div className="nav-list">
                 <div className="nav-filter">
-                  <i className="fa fa-filter fa-lg icon-filter"></i>
+                  <Dropdown
+                    isOpen={dropdownState}
+                    toggle={toggleDropDown}
+                    className="dropdown-filter"
+                  >
+                    <DropdownToggle tag="span" data-toggle="dropdown" caret>
+                      <i className="fa fa-filter fa-lg"></i>
+                    </DropdownToggle>
+                    <DropdownMenu>
+                      <DropdownItem header>Filtrar</DropdownItem>
+                      {stateList.map((item, index) => (
+                        <div
+                          style={{ textTransform: "capitalize" }}
+                          className="dropdown-item"
+                          key={index}
+                          onClick={() => filter(item)}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                      <DropdownItem onClick={() => filter(null)}>
+                        TODOS
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
                   <div className="input-group mb-3 input-search">
                     <div className="input-group-prepend">
                       <span className="input-group-text" id="basic-addon1">
@@ -76,6 +141,9 @@ export const ListOrders = (props) => {
                       placeholder="Buscar"
                       aria-label="Buscar"
                       aria-describedby="basic-addon1"
+                      defaultValue={searchValue}
+                      ref={inputSearch}
+                      onChange={debounce(() => search(), 1000)}
                     />
                   </div>
                 </div>
@@ -104,9 +172,13 @@ export const ListOrders = (props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {/*data.product.map((product, index) => (
-                    <ProductRow key={index} product={product} clear={clear} />
-                  ))*/}
+                  {order.map((order, index) => (
+                    <OrderRow
+                      key={index}
+                      order={order}
+                      toggleViewDetail={toggleViewDetail}
+                    />
+                  ))}
                 </tbody>
               </Table>
             </CardBody>

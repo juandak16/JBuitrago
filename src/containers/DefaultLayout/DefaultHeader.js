@@ -1,10 +1,11 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   UncontrolledDropdown,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Button,
   Nav,
   NavItem,
 } from "reactstrap";
@@ -13,6 +14,8 @@ import PropTypes from "prop-types";
 import { AppNavbarBrand, AppSidebarToggler } from "@coreui/react";
 import logo from "../../assets/img/brand/logo-mini.png";
 import sygnet from "../../assets/img/brand/sygnet.svg";
+
+import CrudItem from "../../components/Items/CrudItem/CrudItem";
 
 const propTypes = {
   children: PropTypes.node,
@@ -99,13 +102,18 @@ class DefaultHeader extends Component {
                 <strong>Settings</strong>
               </DropdownItem>
               <DropdownItem>
+                <Link to="/productos" className="nav-link">
+                  Productos
+                </Link>
+              </DropdownItem>
+              <DropdownItem>
                 <Link to="/clientes" className="nav-link">
                   Clientes
                 </Link>
               </DropdownItem>
               <DropdownItem>
                 <Link to="/users" className="nav-link">
-                  Usuarios
+                  Personal
                 </Link>
               </DropdownItem>
               <DropdownItem header tag="div" className="text-center">

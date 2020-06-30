@@ -6,13 +6,11 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  Row,
 } from "reactstrap";
 import ProductRowResumen from "../ProductRowResumen/ProductRowResumen";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { GET_RESUMEN_PEDIDO } from "../../../constants/queries";
-import { POST_DETAILORDER } from "../../../constants/mutations";
 
 export const POST_ORDER = gql`
   mutation PostOrder($object: [order_insert_input!]!) {
@@ -24,9 +22,20 @@ export const POST_ORDER = gql`
   }
 `;
 
+export const POST_DETAIL_ORDER = gql`
+  mutation PostDetailOrder($object: [detail_order_insert_input!]!) {
+    insert_detail_order(objects: $object) {
+      returning {
+        id
+      }
+    }
+  }
+`;
+
 const ResumenPedido = (props) => {
-  const { isOpenModal, toggleModal, pedidoObject } = props;
+  const { isOpenModal, toggleModal, toggleModalInfo, pedidoObject } = props;
   const [postOrder] = useMutation(POST_ORDER);
+  const [postDetailOrder] = useMutation(POST_DETAIL_ORDER);
   const client_id = pedidoObject.client_id;
   const typePay_id = pedidoObject.typePay_id;
   const list = pedidoObject.list;
@@ -38,16 +47,31 @@ const ResumenPedido = (props) => {
     sumTotal();
   }, []);
 
-  const confirmarPedido = () => {
-    let object = new Object();
+  const confirmarPedido = async () => {
+    let object = {};
     object.type_list_id = list[0].type_list_id;
     object.client_id = client_id;
-    object.user_id = 4;
+    object.user_id = "4"; //USER
     object.status_order_id = 1;
     object.type_pay_id = typePay_id;
     object.total_order = total.toString();
-
-    let id = postOrder({ variables: { object } });
+    object.subtotal_order = subTotal.toString();
+    if (list[0].type_list_id === 2) {
+      object.iva_order = iva.toString();
+    }
+    await postOrder({ variables: { object } }).then((response) => {
+      object = {};
+      list.map(async (detail, index) => {
+        object.product_id = detail.id;
+        object.order_id = response.data.insert_order.returning[0].id;
+        object.count = detail.count;
+        object.total = detail.total;
+        await postDetailOrder({ variables: { object } });
+        object = {};
+      });
+    });
+    toggleModal();
+    toggleModalInfo();
   };
 
   const sumTotal = () => {
@@ -58,8 +82,14 @@ const ResumenPedido = (props) => {
     });
     setSubTotal(newSubTotal);
     setIva(newSubTotal * 0.16);
-    newTotal = newSubTotal * 1.16;
-    setTotal(newTotal);
+    if (list[0].type_list_id === 1) {
+      newTotal = newSubTotal;
+      setTotal(newTotal);
+    }
+    if (list[0].type_list_id === 2) {
+      newTotal = newSubTotal * 1.16;
+      setTotal(newTotal);
+    }
   };
 
   const { loading, error, data } = useQuery(
@@ -100,12 +130,7 @@ const ResumenPedido = (props) => {
           </thead>
           <tbody>
             {list.map((item, index) => (
-              <ProductRowResumen
-                key={index}
-                item={item}
-                index={index}
-                list={list}
-              />
+              <ProductRowResumen key={index} item={item} list={list} />
             ))}
           </tbody>
         </Table>
@@ -115,7 +140,6 @@ const ResumenPedido = (props) => {
           <div className="container-client-typepay">
             <div className="detail">
               <p>
-                {console.log(data)}
                 <span className="bold">Cliente: </span>
                 <span className="capitalize"> {data.client[0].name}</span>
               </p>
@@ -132,9 +156,11 @@ const ResumenPedido = (props) => {
             <p className="subtotal">
               <span className="bold">SubTotal:</span>${subTotal.toFixed(2)}
             </p>
-            <p className="iva">
-              <span className="bold">IVA:</span> ${iva.toFixed(2)}
-            </p>
+            {list[0].type_list_id === 2 ? (
+              <p className="iva">
+                <span className="bold">IVA:</span> ${iva.toFixed(2)}
+              </p>
+            ) : null}
             <p className="total">
               <span className="bold">Total:</span> ${total.toFixed(2)}
             </p>
@@ -147,12 +173,12 @@ const ResumenPedido = (props) => {
             color="secondary"
             onClick={toggleModal}
           >
-            Atras
+            Atrás
           </Button>
           <Button
             className="btn btn-success"
             color="primary"
-            //onClick={() => confirmarPedido()}
+            onClick={() => confirmarPedido()}
           >
             Confirmar
           </Button>

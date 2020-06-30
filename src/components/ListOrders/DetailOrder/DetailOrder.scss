@@ -1,0 +1,27 @@
+.modal-detailorder {
+  .header-detailorder {
+  }
+  .modal-body-info {
+    .progress-order {
+      border-radius: 0;
+      height: 9px;
+      margin-bottom: 10px;
+    }
+  }
+  .footer-resumenpedido {
+    .buttons-detailpedido {
+      margin: 0;
+      width: 96%;
+      display: flex;
+      justify-content: space-between;
+      .buttons-actiondetailpedido {
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        button {
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+}

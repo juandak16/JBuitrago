@@ -4,6 +4,14 @@
 @import "../components/ListProducts/InfoPedido/InfoPedido.scss";
 @import "../components/ListProducts/ProductRow/ProductRow.scss";
 @import "../components/ListProducts/ResumenPedido/ResumenPedido.scss";
+@import "../components/ListOrders/ListOrders.scss";
+@import "../components/ListOrders/OrderRow/OrderRow.scss";
+@import "../components/ListOrders/DetailOrder/DetailOrder.scss";
+@import "../components/ListOrders/InvoicePDF/InvoicePDF.scss";
+@import "../components/Items/CrudItem/CrudItem.scss";
+@import "../components/Items/ListItems.scss";
+@import "../components/Clients/CrudClient/CrudClient.scss";
+@import "../components/Login/Login.scss";
 
 //listproduct
 
@@ -18,6 +26,11 @@
 .title-user {
   margin: 0;
   margin-right: 10px;
+}
+.add-item {
+  font-size: 12px;
+  margin: 0 20px;
+  padding: 5px 10px;
 }
 
 //DefaultLayout

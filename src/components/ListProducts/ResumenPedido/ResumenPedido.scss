@@ -38,9 +38,12 @@
 
   .buttons-infopedido {
     margin: 0;
-    width: 200px;
+    width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-end;
+    button {
+      margin-left: 5px;
+    }
   }
 }
 

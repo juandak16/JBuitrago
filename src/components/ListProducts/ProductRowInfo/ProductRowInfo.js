@@ -14,11 +14,13 @@ const ProductRowInfo = (props) => {
   }, []);
 
   const countChange = () => {
-    item.count = count.current.value;
+    count.current.value > 0
+      ? (item.count = count.current.value)
+      : (count.current.value = item.count = 1);
   };
 
-  const deleteProduct = (item) => {
-    deleteItem(item);
+  const deleteProduct = () => {
+    deleteItem(index);
     setDeleteProductOnCar(true);
   };
 
@@ -37,14 +39,14 @@ const ProductRowInfo = (props) => {
           className="input-count"
           aria-label="cantidad"
           aria-describedby="basic-addon1"
-          defaultValue="1"
+          placeholder="1"
           ref={count}
           onChange={() => countChange(count)}
         />
       </td>
       <td className="actions-buttons-info">
         <button
-          onClick={() => deleteProduct(item)}
+          onClick={() => deleteProduct()}
           type="button"
           className="btn btn-danger button-action-info"
         >
