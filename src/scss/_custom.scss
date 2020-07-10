@@ -32,6 +32,13 @@
   margin: 0 20px;
   padding: 5px 10px;
 }
+.rows {
+  display: flex;
+  flex-wrap: wrap;
+}
+.between {
+  justify-content: space-between;
+}
 
 //DefaultLayout
 @media (max-width: 600px) {

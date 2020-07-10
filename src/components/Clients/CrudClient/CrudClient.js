@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   Button,
   Table,
@@ -11,7 +11,7 @@ import { AppSwitch } from "@coreui/react";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import ConfirmationModal from "../../ConfirmationModal";
-
+import { Auth } from "../../../firebase";
 export const INSERT_CLIENT = gql`
   mutation InsertProduct(
     $address: String
@@ -20,6 +20,7 @@ export const INSERT_CLIENT = gql`
     $phone: String
     $rif_number: numeric
     $rif_type: String
+    $user_id: String
   ) {
     insert_client(
       objects: {
@@ -29,6 +30,7 @@ export const INSERT_CLIENT = gql`
         phone: $phone
         rif_number: $rif_number
         rif_type: $rif_type
+        user_id: $user_id
       }
     ) {
       returning {
@@ -77,7 +79,8 @@ const CrudClient = (props) => {
   const cityRef = useRef(null);
   const addressRef = useRef(null);
   const phoneRef = useRef(null);
-
+  const auth = useContext(Auth);
+  console.log(auth);
   const toggleConfirmationModal = () => {
     setIsConfirmation(!isConfirmation);
   };
@@ -123,6 +126,7 @@ const CrudClient = (props) => {
           city: cityRef.current.value.toString(),
           address: addressRef.current.value.toString(),
           phone: phoneRef.current.value.toString(),
+          user_id: auth.sesion.uid,
         },
       });
     }

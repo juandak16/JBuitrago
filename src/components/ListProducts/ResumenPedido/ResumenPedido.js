@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Button,
   Table,
@@ -11,7 +11,7 @@ import ProductRowResumen from "../ProductRowResumen/ProductRowResumen";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { GET_RESUMEN_PEDIDO } from "../../../constants/queries";
-
+import { Auth } from "../../../firebase";
 export const POST_ORDER = gql`
   mutation PostOrder($object: [order_insert_input!]!) {
     insert_order(objects: $object) {
@@ -33,15 +33,15 @@ export const POST_DETAIL_ORDER = gql`
 `;
 
 const ResumenPedido = (props) => {
-  const { isOpenModal, toggleModal, toggleModalInfo, pedidoObject } = props;
+  const { isOpenModal, toggleModal, toggleModalInfo, getObject } = props;
   const [postOrder] = useMutation(POST_ORDER);
   const [postDetailOrder] = useMutation(POST_DETAIL_ORDER);
-  const client_id = pedidoObject.client_id;
-  const typePay_id = pedidoObject.typePay_id;
-  const list = pedidoObject.list;
+  const [pedidoObject, setPedidoObject] = useState(getObject());
+  const { client_id, typePay_id, list } = pedidoObject;
   const [total, setTotal] = useState(0);
   const [subTotal, setSubTotal] = useState(0);
   const [iva, setIva] = useState(0);
+  const auth = useContext(Auth);
 
   useEffect(() => {
     sumTotal();
@@ -51,7 +51,7 @@ const ResumenPedido = (props) => {
     let object = {};
     object.type_list_id = list[0].type_list_id;
     object.client_id = client_id;
-    object.user_id = "4"; //USER
+    object.user_id = auth.sesion.uid; //USER
     object.status_order_id = 1;
     object.type_pay_id = typePay_id;
     object.total_order = total.toString();

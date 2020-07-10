@@ -9,13 +9,8 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { firebaseInstance } from "./firebase";
 import firebaseConfig from "./firebase";
-var admin = require("firebase-admin");
 
 firebaseInstance.initializeApp(firebaseConfig);
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: "https://jbuitrago-972b4.firebaseio.com",
-});
 
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.unregister();

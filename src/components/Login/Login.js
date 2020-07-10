@@ -18,10 +18,8 @@ import { Auth } from "../../firebase";
 import logo from "../../assets/img/brand/logo.png";
 import fondo from "../../assets/img/brand/fondo-login.jpg";
 //const functions = require("firebase-functions");
-const admin = require("firebase-admin");
 
-const Login = () => {
-  const [redirect, setRedirect] = useState(false);
+const Login = (props) => {
   const auth = useContext(Auth);
 
   const login = (event) => {
@@ -32,24 +30,46 @@ const Login = () => {
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
-        console.log("david inicio sesion");
-
-        setRedirect(true);
+        //set user data in auth.sesion
+        auth
+          .auth()
+          .currentUser.getIdTokenResult()
+          .then((idTokenResult) => {
+            let user = auth.auth().currentUser;
+            if (user != null) {
+              auth.sesion = {
+                name: user.displayName,
+                email: user.email,
+                uid: user.uid,
+                role:
+                  idTokenResult.claims["https://hasura.io/jwt/claims"][
+                    "x-hasura-default-role"
+                  ],
+              };
+              props.history.push("/notaentrega");
+              console.log(`${auth.sesion.name} inicio sesion`);
+            } else {
+              auth.sesion = null;
+              console.log(`${auth.sesion.name} se cargo`);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       })
       .catch(function (error) {
         // Handle Errors here.
         var errorCode = error.code;
         var errorMessage = error.message;
-        alert("Email y/o Contraseña incorrecta");
+        alert(errorMessage);
         // ...
       });
   };
 
-  return (
+  return !auth.sesion ? (
     <div className="app flex-row align-items-center">
       <img src={fondo} className="fondo" />
       <div className="overley" />
-      {redirect ? <Redirect from="/" to="/notaentrega" /> : null}
       <Container>
         <Row className="justify-content-center">
           <Card style={{ width: 340, backgroundColor: "#fffffff0" }}>
@@ -69,7 +89,7 @@ const Login = () => {
                     name="email"
                     className="form-control"
                     type="text"
-                    placeholder="Email"
+                    placeholder="Correo"
                     autoComplete="Email"
                   />
                 </InputGroup>
@@ -83,7 +103,7 @@ const Login = () => {
                     name="password"
                     className="form-control"
                     type="password"
-                    placeholder="Password"
+                    placeholder="Contraseña"
                     autoComplete="current-password"
                   />
                 </InputGroup>
@@ -94,7 +114,7 @@ const Login = () => {
                       className="px-4 btn btn-success "
                       type="submit"
                     >
-                      Login
+                      Iniciar sesión
                     </button>
                   </Col>
                   <Col xs="6" className="text-right">
@@ -109,6 +129,8 @@ const Login = () => {
         </Row>
       </Container>
     </div>
+  ) : (
+    <Redirect from="/" to="/notaentrega" />
   );
 };
 

@@ -36,47 +36,6 @@ export const ListProducts = (props) => {
   const inputSearch = useRef(null);
   const auth = useContext(Auth);
 
-  /*auth.auth().onAuthStateChanged(function (user) {
-    if (user) {
-      console.log(user);
-      auth
-        .auth()
-        .setCustomUserClaims("qb6wz74CtyTkvhcibm3HawsGVTH2", { admin: true })
-        .then(() => {
-          console.log("its admin");
-        });
-    } else {
-      console.log(user);
-    }
-  });*/
-
-  auth.auth().onAuthStateChanged(function (user) {
-    /*auth
-      .auth()
-      .setCustomUserClaims("qb6wz74CtyTkvhcibm3HawsGVTH2", { admin: true })
-      .then(() => {
-        console.log("its admin");
-      });
-    auth
-      .auth()
-      .currentUser.getIdTokenResult()
-      .then((idTokenResult) => {
-        // Confirm the user is an Admin.
-        console.log(idTokenResult);
-        if (!!idTokenResult.claims.admin) {
-          // Show admin UI.
-          console.log("its admin");
-          //showAdminUI();
-        } else {
-          // Show regular user UI.
-          console.log("not admin");
-          //showRegularUI();
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });*/
-  });
   useEffect(() => {
     if (data) getFilter();
   }, [data]);

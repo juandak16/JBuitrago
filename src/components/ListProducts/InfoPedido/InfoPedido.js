@@ -13,45 +13,53 @@ import { useQuery } from "@apollo/react-hooks";
 import { GET_INFO_PEDIDO } from "../../../constants/queries";
 import ResumenPedido from "../ResumenPedido/ResumenPedido";
 import CrudClient from "../../Clients/CrudClient/CrudClient";
+import SelectSearch from "react-select-search";
 
 const InfoPedido = (props) => {
   const { loading, error, data, refetch } = useQuery(GET_INFO_PEDIDO(gql));
   const { isOpenModal, toggleModal, list } = props;
-  //const { pedidoObject, setPedidoObject } = useState(null);
-  const selectClient = useRef(null);
   const selectTypePay = useRef(null);
   const [createClient, setCreateClient] = useState(false);
   const [isOpenResumenPedido, setIsOpenResumenPedido] = useState(false);
   const [newList, setNewList] = useState([]);
+  const [clientId, setClientId] = useState("0");
+  const [typePayId, setTypePayId] = useState("0");
+  const [listClient, setListClients] = useState([]);
 
   useEffect(() => {
     setNewList(list.map(JSON.parse));
-    console.log(newList);
   }, []);
+
+  useEffect(() => {
+    if (data) getClients();
+  }, [data]);
+
+  const getClients = () => {
+    let obj = {
+      id: 0,
+      name: "",
+    };
+    client.unshift(obj);
+    client.map((item) => {
+      item.value = item.id.toString();
+    });
+    setListClients(client);
+  };
 
   let pedidoObject = {};
 
-  const toggleResumenPedido = () => {
+  const toggleResumenPedido = async () => {
     setIsOpenResumenPedido(!isOpenResumenPedido);
   };
 
   const toggleCreateClient = () => {
     setCreateClient(!createClient);
   };
-
   const generarResumen = () => {
-    if (
-      selectClient.current.value != 0 &&
-      selectTypePay.current.value != 0 &&
-      newList[0]
-    ) {
-      pedidoObject.client_id = selectClient.current.value;
-      pedidoObject.typePay_id = selectTypePay.current.value;
-      pedidoObject.list = newList;
-
-      return pedidoObject;
-    } else {
-    }
+    pedidoObject.client_id = clientId;
+    pedidoObject.typePay_id = typePayId;
+    pedidoObject.list = newList;
+    return pedidoObject;
   };
 
   const deleteItem = (index) => {
@@ -60,6 +68,7 @@ const InfoPedido = (props) => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
+  const { client, type_pay } = data;
   return !isOpenResumenPedido ? (
     <Modal
       isOpen={isOpenModal}
@@ -107,7 +116,6 @@ const InfoPedido = (props) => {
               <CrudClient
                 isOpenModal={createClient}
                 toggleModal={toggleCreateClient}
-                //client={null}
                 refetchClient={refetch}
               />
             ) : null}
@@ -116,27 +124,18 @@ const InfoPedido = (props) => {
       </ModalBody>
       <ModalFooter className="footer-infopedido">
         <div className="detail-pedido">
-          <div className="detail">
+          <div className="detail" style={{ width: 375 }}>
             <div className="input-group mb-3 dropdown-infopedido">
               <div className="input-group-prepend">
                 <label className="input-group-text">Cliente</label>
               </div>
-              <select
-                className="custom-select capitalize"
-                id="client"
-                ref={selectClient}
-              >
-                <option value="0">Choose...</option>
-                {data.client.map((client, index) => (
-                  <option
-                    key={index}
-                    value={client.id}
-                    className="option-infopedido"
-                  >
-                    {client.name}
-                  </option>
-                ))}
-              </select>
+              <SelectSearch
+                onChange={(value) => setClientId(value)}
+                value={clientId}
+                placeholder="Selecciona el Cliente"
+                options={listClient}
+                search
+              />
             </div>
             <Button
               className="btn btn-success btn-square btn-add-infopedido"
@@ -145,7 +144,7 @@ const InfoPedido = (props) => {
               Agregar
             </Button>
           </div>
-          <div className="detail">
+          <div className="detail" style={{ width: 340 }}>
             <div className="input-group mb-3 dropdown-infopedido">
               <div className="input-group-prepend">
                 <label className="input-group-text">Tipo de Pago</label>
@@ -154,9 +153,11 @@ const InfoPedido = (props) => {
                 className="custom-select capitalize"
                 id="typePay"
                 ref={selectTypePay}
+                value={typePayId}
+                onChange={() => setTypePayId(selectTypePay.current.value)}
               >
-                <option value="0">Choose...</option>
-                {data.type_pay.map((type_pay, index) => (
+                <option value="0">Selecciona el tipo de pago</option>
+                {type_pay.map((type_pay, index) => (
                   <option
                     key={index}
                     value={type_pay.id}
@@ -180,22 +181,19 @@ const InfoPedido = (props) => {
           <Button
             className="btn btn-success"
             color="primary"
-            onClick={() => (pedidoObject = toggleResumenPedido())}
+            onClick={() => toggleResumenPedido()}
           >
             Generar
           </Button>
         </div>
       </ModalFooter>
-      {console.log(newList)}
     </Modal>
-  ) : selectClient.current.value != 0 &&
-    selectTypePay.current.value != 0 &&
-    newList[0] ? (
+  ) : clientId > 0 && typePayId > 0 && newList[0] ? (
     <ResumenPedido
-      isOpenModal={isOpenModal}
+      isOpenModal={isOpenResumenPedido}
       toggleModal={toggleResumenPedido}
       toggleModalInfo={toggleModal}
-      pedidoObject={generarResumen()}
+      getObject={generarResumen}
     />
   ) : (
     (setIsOpenResumenPedido(!isOpenResumenPedido),

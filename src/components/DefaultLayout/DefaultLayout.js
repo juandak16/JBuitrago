@@ -1,4 +1,10 @@
-import React, { Component, Suspense, useState, useContext } from "react";
+import React, {
+  Component,
+  Suspense,
+  useState,
+  useContext,
+  useEffect,
+} from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import { Container } from "reactstrap";
 
@@ -15,35 +21,39 @@ import routes from "../../routes";
   import("../../components/ListProducts/ListProducts")
 );*/
 
-const DefaultLayout = () => {
-  const [logout, setLogout] = useState(false);
+const DefaultLayout = (props) => {
+  const [log, setLog] = useState(null);
   const auth = useContext(Auth);
+
+  useEffect(() => {}, []);
+
   const loading = () => (
     <div className="animated fadeIn pt-1 text-center">Loading...</div>
   );
 
-  const signOut = (e) => {
-    auth
+  const signOut = async (e) => {
+    await auth
       .auth()
       .signOut()
-      .then(function () {
+      .then(async () => {
+        auth.sesion = null;
+        props.history.push("/login");
         console.log("salio");
       })
       .catch(function (error) {
         // An error happened.
       });
     e.preventDefault();
-    setLogout(true);
   };
 
-  return (
+  return auth.sesion ? (
     <div className="app">
+      {!auth.sesion ? <Redirect from="/" to="/login" /> : null}
       <AppHeader fixed>
         <Suspense fallback={() => loading()}>
           <DefaultHeader onLogout={(e) => signOut(e)} />
         </Suspense>
       </AppHeader>
-
       <div className="app-body">
         <main className="main">
           <Container fluid className="container-body">
@@ -97,7 +107,7 @@ const DefaultLayout = () => {
                   name="Clientes"
                   render={(props) => <ListClients />}
                 />
-                {logout ? <Redirect from="/" to="/login" /> : null}
+
                 <Redirect from="/" to="/notaentrega" />
               </Switch>
             </Suspense>
@@ -105,6 +115,8 @@ const DefaultLayout = () => {
         </main>
       </div>
     </div>
+  ) : (
+    <Redirect from="/" to="/login" />
   );
 };
 
