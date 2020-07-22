@@ -11,7 +11,13 @@ import {
 } from "reactstrap";
 
 const UploadModal = (props) => {
-  const { isOpenModal, toggleModal, type_list, confirm } = props;
+  const {
+    isOpenModal,
+    toggleModal,
+    type_list,
+    confirm,
+    listTypesProducts,
+  } = props;
   const fileRef = useRef(null);
   const listRef = useRef(null);
 
@@ -29,6 +35,7 @@ const UploadModal = (props) => {
         let obj = {};
         let currentLine = lines[i].split("\t");
         let pos = 0;
+        let found = false;
         obj.type_list_id = listRef.current.value;
         currentLine.map((item) => {
           if (item) {
@@ -39,7 +46,17 @@ const UploadModal = (props) => {
               item = true;
             }
             if (pos === 6) {
+              found = false;
               item = item.trim();
+              listTypesProducts.map((type) => {
+                if (type.name === item) {
+                  found = true;
+                }
+              });
+              if (!found) {
+                console.log(item);
+                console.log("no");
+              }
             }
             obj[headers[pos]] = item;
             pos++;
@@ -47,7 +64,11 @@ const UploadModal = (props) => {
         });
         if (pos > 4) {
           if (pos == 7) {
-            result.push(obj);
+            if (found) {
+              result.push(obj);
+            } else {
+              error.push(obj);
+            }
           } else {
             error.push(obj);
           }
@@ -55,7 +76,7 @@ const UploadModal = (props) => {
       }
       confirm(result, error);
     };
-    read.readAsText(fileRef.current.files[0]);
+    read.readAsText(fileRef.current.files[0], "ISO-8859-1");
   };
 
   return (

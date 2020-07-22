@@ -11,7 +11,7 @@ const ProductRowInfo = (props) => {
     list.indexOf(item) >= 0
       ? setDeleteProductOnCar(false)
       : setDeleteProductOnCar(true);
-  }, []);
+  }, [item, list]);
 
   const countChange = () => {
     count.current.value > 0

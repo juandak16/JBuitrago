@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { HashRouter, Route, Switch } from "react-router-dom";
 import Login from "./components/Login/Login";
-import Register from "./components/Register/Register";
 import Page404 from "./views/Pages/Page404";
 import Page500 from "./views/Pages/Page500";
 import DefaultLayout from "./components/DefaultLayout";
@@ -12,6 +11,7 @@ import "./App.scss";
 import { ApolloProvider } from "@apollo/react-hooks";
 import { ApolloClient, HttpLink, InMemoryCache } from "apollo-boost";
 import { firebaseInstance } from "./firebase";
+import { firebaseInstance2 } from "./firebase";
 import { Auth } from "./firebase";
 import { setContext } from "apollo-link-context";
 //import { setContext } from "apollo-link-context";
@@ -24,6 +24,7 @@ function App() {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
+    //firebaseInstance.auth().signOut();
     firebaseInstance.auth().onAuthStateChanged(async (user) => {
       if (firebaseInstance.auth().currentUser) {
         await firebaseInstance
@@ -89,12 +90,7 @@ function App() {
                 name="Login Page"
                 render={(props) => <Login {...props} />}
               />
-              <Route
-                exact
-                path="/register"
-                name="Register Page"
-                render={(props) => <Register {...props} />}
-              />
+
               <Route
                 exact
                 path="/404"

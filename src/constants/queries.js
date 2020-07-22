@@ -1,15 +1,16 @@
-export const GET_PRODUCTS = (gql, list_id, filter, search) => gql`
+export const GET_PRODUCTS = (gql, list_id, filter, search, page, limit) => gql`
   query getProducts{
     product(
-      limit: 5000 
+      limit: ${limit}
       order_by: {description: asc} 
+      offset: ${page * limit} 
       where: {
         _or: [ 
         {code: {_ilike: "%${search}%"}},
         {description: {_ilike: "%${search}%"}},
         {trademark: {${search !== null ? `_ilike: "%${search}%"` : ""}}}
         ],
-        type: {${filter !== null ? `_eq: "${filter}"` : ""}},
+        type_product: {${filter !== null ? `_eq: "${filter}"` : ""}},
         type_list: { id: { _eq: ${list_id} } },
         state: {_eq: true}
       }
@@ -20,16 +21,35 @@ export const GET_PRODUCTS = (gql, list_id, filter, search) => gql`
       trademark
       price
       type_list_id
-      type
+      type_product
+    }
+    product_aggregate(where: {
+        _or: [ 
+        {code: {_ilike: "%${search}%"}},
+        {description: {_ilike: "%${search}%"}},
+        {trademark: {${search !== null ? `_ilike: "%${search}%"` : ""}}}
+        ],
+        type_product: {${filter !== null ? `_eq: "${filter}"` : ""}},
+        type_list: { id: { _eq: ${list_id} } },
+        state: {_eq: true}
+      }) {
+      aggregate {
+        count
+      }
+    }
+    type_product{
+      id 
+      name
     }
   }
 `;
 
-export const GET_ALL_PRODUCTS = (gql, filter, search) => gql`
+export const GET_ALL_PRODUCTS = (gql, filter, search, page, limit) => gql`
   query getProducts {
     product(
-      limit: 5000
+      limit: ${limit}
       order_by: { description: asc }
+      offset: ${page * limit} 
       where: {_or: [ 
         {code: {_ilike: "%${search}%"}},
         {description: {_ilike: "%${search}%"}},
@@ -37,7 +57,7 @@ export const GET_ALL_PRODUCTS = (gql, filter, search) => gql`
           ${search !== null ? `_ilike: "%${search}%"` : ""}
         }}
       ],
-       type: {
+       type_product: {
         ${filter !== null ? `_eq: "${filter}"` : ""}
        } }
     ) {
@@ -47,11 +67,33 @@ export const GET_ALL_PRODUCTS = (gql, filter, search) => gql`
       description
       trademark
       price
-      type
       type_list_id
+      type_product
       type_list {
         abbreviate
       }
+    }
+    product_aggregate(
+      where: {
+        _or: [ 
+          {code: {_ilike: "%${search}%"}},
+          {description: {_ilike: "%${search}%"}},
+          {trademark: {
+            ${search !== null ? `_ilike: "%${search}%"` : ""}
+          }}
+        ],
+        type_product: {
+          ${filter !== null ? `_eq: "${filter}"` : ""}
+        } 
+      }
+      ) {
+      aggregate {
+        count
+      }
+    }
+    type_product{
+      id 
+      name
     }
   }
 `;
@@ -152,6 +194,7 @@ query getDetailOrder {
           price
           trademark
         }
+        price
         count
         total
       }
@@ -164,9 +207,13 @@ query getDetailOrder {
     }
   }
 `;
-export const GET_LIST = (gql) => gql`
+export const GET_CRUD_PRODUCT = (gql) => gql`
   query getList {
     type_list {
+      id
+      name
+    }
+    type_product {
       id
       name
     }
@@ -196,6 +243,60 @@ export const GET_ALL_CLIENTS = (gql, filter, search) => gql`
       rif_number
       phone
       city
+      user_id
+          user {
+      name
+    }
+    }
+  }
+`;
+export const GET_ALL_USERS = (gql, filter, search) => gql`
+  query getUsers {
+    user {
+      address
+      id
+      name
+      rif_number
+      rif_type
+      phone
+      role
+      email
+    }
+  }
+`;
+export const GET_USER = (gql, id) => gql`
+         query getUser {
+           user(where: { id: { _eq: "${id}" } }) {
+             id
+             address
+             name
+             phone
+             rif_number
+             rif_type
+             role
+             email
+           }
+         }
+       `;
+
+export const GET_CONFIG = (
+  gql,
+  id,
+  filter,
+  filterTwo,
+  search,
+  searchTwo
+) => gql`
+  query getConfig {
+    type_pay {
+      id
+      iva
+      name
+      descount
+    }
+    type_product {
+      id
+      name
     }
   }
 `;

@@ -1,16 +1,13 @@
-import React, {
-  Component,
-  Suspense,
-  useState,
-  useContext,
-  useEffect,
-} from "react";
+import React, { Suspense, useContext, useEffect } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import { Container } from "reactstrap";
 
 import { ListProducts } from "../ListProducts/ListProducts";
 import { ListItems } from "../Items/ListItems";
 import { ListClients } from "../Clients/ListClients";
+import { ListUsers } from "../Users/ListUsers";
+import { Config } from "../Config/Config";
+import Profile from "../Profile/Profile";
 import { ListOrders } from "../ListOrders/ListOrders";
 import { AppHeader } from "@coreui/react";
 import DefaultHeader from "./DefaultHeader";
@@ -22,7 +19,6 @@ import routes from "../../routes";
 );*/
 
 const DefaultLayout = (props) => {
-  const [log, setLog] = useState(null);
   const auth = useContext(Auth);
 
   useEffect(() => {}, []);
@@ -48,7 +44,6 @@ const DefaultLayout = (props) => {
 
   return auth.sesion ? (
     <div className="app">
-      {!auth.sesion ? <Redirect from="/" to="/login" /> : null}
       <AppHeader fixed>
         <Suspense fallback={() => loading()}>
           <DefaultHeader onLogout={(e) => signOut(e)} />
@@ -99,16 +94,34 @@ const DefaultLayout = (props) => {
                   exact
                   path="/productos"
                   name="Productos"
-                  render={(props) => <ListItems />}
+                  render={(props) => <ListItems {...props} />}
                 />
                 <Route
                   exact
                   path="/clientes"
                   name="Clientes"
-                  render={(props) => <ListClients />}
+                  render={(props) => <ListClients {...props} />}
                 />
-
-                <Redirect from="/" to="/notaentrega" />
+                <Route
+                  exact
+                  path="/usuarios"
+                  name="Usuarios"
+                  render={(props) => <ListUsers {...props} />}
+                />
+                <Route
+                  exact
+                  path="/perfil"
+                  name="Perfil"
+                  render={(props) => (
+                    <Profile {...props} id={auth.sesion.uid} />
+                  )}
+                />
+                <Route
+                  exact
+                  path="/config"
+                  name="Config"
+                  render={(props) => <Config {...props} />}
+                />
               </Switch>
             </Suspense>
           </Container>

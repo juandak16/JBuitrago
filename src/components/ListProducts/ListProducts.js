@@ -10,6 +10,9 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap";
 import { gql } from "apollo-boost";
 import { useQuery } from "@apollo/react-hooks";
@@ -24,8 +27,11 @@ import { Auth } from "../../firebase";
 export const ListProducts = (props) => {
   const [filterValue, setFilterValue] = useState(null);
   const [searchValue, setSearchValue] = useState(null);
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(100);
+  const [pages, setPages] = useState(0);
   const { loading, error, data, refetch } = useQuery(
-    GET_PRODUCTS(gql, props.list_id, filterValue, searchValue)
+    GET_PRODUCTS(gql, props.list_id, filterValue, searchValue, page, limit)
   );
   const [clear, setClear] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -37,33 +43,28 @@ export const ListProducts = (props) => {
   const auth = useContext(Auth);
 
   useEffect(() => {
-    if (data) getFilter();
-  }, [data]);
+    setPage(0);
+    setPages(0);
+  }, [props.list_id]);
 
-  const getFilter = () => {
-    let array = [];
+  const getPages = () => {
+    let countPages = product_aggregate.aggregate.count / limit;
+    countPages ? setPages(countPages) : setPages(1);
+  };
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
+  const { product, product_aggregate, type_product } = data;
+  const changePage = (value) => {
+    setPage(value);
 
-    if (!typesList.length) {
-      let band;
-      product.map((item) => {
-        band = false;
-
-        array.map((type) => {
-          if (item.type === type) {
-            band = true;
-          }
-        });
-
-        if (band === false) {
-          array.push(item.type);
-        }
-      });
-      setTypesList(array);
-    }
+    console.log(limit, "-", page, "-", pages);
+    refetch();
   };
 
   const filter = (item) => {
-    setFilterValue(item);
+    setPage(0);
+    setPages(0);
+    item ? setFilterValue(item.name) : setFilterValue(null);
     refetch();
     toggleDropDown();
   };
@@ -73,6 +74,8 @@ export const ListProducts = (props) => {
     setTimeout(() => {
       if (inputSearch.current) inputSearch.current.focus();
     }, 1000);
+    setPages(0);
+    setPage(0);
   };
 
   const toggleDropDown = () => {
@@ -122,10 +125,6 @@ export const ListProducts = (props) => {
     });
     return list;
   };
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-  const { product } = data;
 
   return (
     <div className="animated fadeIn" key={loading}>
@@ -182,14 +181,14 @@ export const ListProducts = (props) => {
                     </DropdownToggle>
                     <DropdownMenu>
                       <DropdownItem header>Filtrar</DropdownItem>
-                      {typesList.map((item, index) => (
+                      {type_product.map((item, index) => (
                         <div
                           style={{ textTransform: "capitalize" }}
                           className="dropdown-item"
                           key={index}
                           onClick={() => filter(item)}
                         >
-                          {item}
+                          {item.name}
                         </div>
                       ))}
                       <DropdownItem onClick={() => filter(null)}>
@@ -247,6 +246,79 @@ export const ListProducts = (props) => {
                   ))}
                 </tbody>
               </Table>
+              {pages ? (
+                <Pagination className="pagination">
+                  <PaginationItem disabled={page === 0}>
+                    <PaginationLink
+                      previous
+                      tag="button"
+                      onClick={() => changePage(page - 1)}
+                    />
+                  </PaginationItem>
+
+                  {page > 1 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page - 2)}
+                      >
+                        {page - 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+                  {page > 0 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page - 1)}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+
+                  <PaginationItem active>
+                    <PaginationLink
+                      tag="button"
+                      onClick={() => changePage(page)}
+                    >
+                      {page + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+
+                  {page < pages - 1 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page + 1)}
+                      >
+                        {page + 2}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+
+                  {page < pages - 2 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page + 2)}
+                      >
+                        {page + 3}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+
+                  <PaginationItem disabled={page >= pages - 1}>
+                    <PaginationLink
+                      next
+                      tag="button"
+                      onClick={() => changePage(page + 1)}
+                    />
+                  </PaginationItem>
+                </Pagination>
+              ) : (
+                getPages()
+              )}
             </CardBody>
           </Card>
         </Col>

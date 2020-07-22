@@ -11,7 +11,15 @@ import {
 } from "reactstrap";
 
 const ConfirmationModal = (props) => {
-  const { isOpenModal, toggleModal, color, word, wordtwo, confirm } = props;
+  const {
+    isOpenModal,
+    toggleModal,
+    color,
+    word,
+    wordtwo,
+    confirm,
+    state,
+  } = props;
   return (
     <Modal
       isOpen={isOpenModal}
@@ -31,6 +39,7 @@ const ConfirmationModal = (props) => {
           className="capitalize"
           color={color}
           onClick={() => confirm(word)}
+          disabled={state === "loading"}
         >
           {word}
         </Button>

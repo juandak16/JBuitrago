@@ -29,9 +29,6 @@ export const ListOrders = (props) => {
   const [dropdownState, setDropdownState] = useState(false);
   const [stateList, setStateList] = useState([]);
   const inputSearch = useRef(null);
-  useEffect(() => {
-    if (data) getFilter();
-  }, [data]);
 
   const getFilter = () => {
     let array = [];
@@ -45,15 +42,20 @@ export const ListOrders = (props) => {
           if (item.status_order.name === state) {
             band = true;
           }
+          return null;
         });
 
         if (band === false) {
           array.push(item.status_order.name);
         }
+        return null;
       });
       setStateList(array);
     }
   };
+  useEffect(() => {
+    if (data) getFilter();
+  }, [data]);
 
   const filter = (item) => {
     setFilterValue(item);

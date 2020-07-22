@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Table,
@@ -7,7 +7,6 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  Row,
 } from "reactstrap";
 //import ProductRowInfo from "../ProductRowInfo/ProductRowInfo";
 import { gql } from "apollo-boost";
@@ -76,6 +75,7 @@ export const DELETE_DETAIL_ORDER = gql`
 
 const DetailOrder = (props) => {
   const { isOpenModal, toggleModal, order_id } = props;
+  const [state, setState] = useState("initial");
   const { loading, error, data, refetch } = useQuery(
     GET_DETAILORDER(gql, order_id)
   );
@@ -93,15 +93,7 @@ const DetailOrder = (props) => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
   let order = data.order[0];
-  let {
-    client,
-    type_pay,
-    detail_orders,
-    status_order_id,
-    subtotal_order,
-    total_order,
-    iva_order,
-  } = order;
+  let { client, type_pay, detail_orders, status_order_id } = order;
 
   const calcCountChecked = () => {
     let countCheceked = 0;
@@ -109,6 +101,7 @@ const DetailOrder = (props) => {
       if (item.checked || item.checked === undefined) {
         countCheceked++;
       }
+      return null;
     });
     return countCheceked;
   };
@@ -125,6 +118,8 @@ const DetailOrder = (props) => {
         return "continuar";
       case 5:
         return "activar";
+      default:
+        return "enviar";
     }
   };
   const getColorStateFuture = () => {
@@ -138,6 +133,8 @@ const DetailOrder = (props) => {
       case 4:
         return "btn-success";
       case 5:
+        return "btn-success";
+      default:
         return "btn-success";
     }
   };
@@ -179,12 +176,19 @@ const DetailOrder = (props) => {
             <Progress striped bar color="info" value="25" />
           </Progress>
         );
+      default:
+        return (
+          <Progress multi className="progress-order">
+            <Progress striped bar color="info" value="25" />
+          </Progress>
+        );
     }
   };
 
   const changeStatus = async (statusFuture) => {
+    setState("loading");
     let status_id;
-    order.status_order_id == 5
+    order.status_order_id === 5
       ? (status_id = 1)
       : (status_id = order.status_order_id + 1);
 
@@ -197,6 +201,7 @@ const DetailOrder = (props) => {
         });
     await refetch();
     toggleConfirmationModal();
+    setState("initial");
     //status_id == 2 ? null : toggleModal();
   };
 
@@ -204,12 +209,12 @@ const DetailOrder = (props) => {
     setIsConfirmation(!isConfirmation);
   };
   const confirm = (status_id) => {
-    if (status_id == 1) {
+    if (status_id === 1) {
       setColor("warning");
       setWord("verificar");
       toggleConfirmationModal();
     }
-    if (status_id == 2) {
+    if (status_id === 2) {
       let countChecked = calcCountChecked();
       if (countChecked > 0) {
         setColor("primary");
@@ -219,20 +224,20 @@ const DetailOrder = (props) => {
         alert("La lista de productos esta vacía");
       }
     }
-    if (status_id == 3) {
+    if (status_id === 3) {
       setColor("success");
       setWord("enviar");
       toggleConfirmationModal();
     }
-    if (status_id == 4) {
+    if (status_id === 4) {
       toggleModal();
     }
-    if (status_id == 5) {
+    if (status_id === 5) {
       setColor("success");
       setWord("activar");
       toggleConfirmationModal();
     }
-    if (status_id == 6) {
+    if (status_id === 6) {
       setColor("danger");
       setWord("anular");
       toggleConfirmationModal();
@@ -243,11 +248,10 @@ const DetailOrder = (props) => {
     let newSubTotal = 0;
     let newTotal = 0;
     detail_orders.map((item) => {
-      if (item.checked || item.checked == undefined) {
+      if (item.checked || item.checked === undefined) {
         newSubTotal += item.total;
-      } else {
-        newSubTotal = newSubTotal;
       }
+      return null;
     });
     setSubTotal(newSubTotal);
     setIva(newSubTotal * 0.16);
@@ -305,6 +309,7 @@ const DetailOrder = (props) => {
           word={word}
           confirm={changeStatus}
           wordtwo={"pedido"}
+          state={state}
         />
       ) : null}
       <ModalHeader toggle={props.toggleModal} className="header-detailorder">
@@ -331,7 +336,7 @@ const DetailOrder = (props) => {
               <th scope="col" className="center-tab">
                 Cantidad
               </th>
-              {status_order_id == 2 ? (
+              {status_order_id === 2 ? (
                 <th scope="col" className="center-tab">
                   Verificación
                 </th>
@@ -343,7 +348,7 @@ const DetailOrder = (props) => {
             </tr>
           </thead>
           <tbody>
-            {status_order_id == 2
+            {status_order_id === 2
               ? detail_orders.map((item, index) => (
                   <VerifyRow
                     key={index}
@@ -356,7 +361,7 @@ const DetailOrder = (props) => {
               : detail_orders.map((item, index) => (
                   <ProductRowResumen
                     key={index}
-                    item={item.product}
+                    item={item}
                     list={detail_orders}
                     count={item.count}
                     subtotal={item.total}
@@ -401,7 +406,7 @@ const DetailOrder = (props) => {
           )}
         </div>
         <div className="buttons-detailpedido">
-          {order.status_order_id == 5 || order.status_order_id == 4 ? (
+          {order.status_order_id === 5 || order.status_order_id === 4 ? (
             <div></div>
           ) : (
             <Button

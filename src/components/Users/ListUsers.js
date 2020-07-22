@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   Button,
   Card,
@@ -14,56 +14,60 @@ import {
 } from "reactstrap";
 import { gql } from "apollo-boost";
 import { useQuery } from "@apollo/react-hooks";
-import { GET_ALL_CLIENTS } from "../../constants/queries";
-import ClientRow from "./ClientRow/ClientRow";
-import CrudClient from "./CrudClient/CrudClient";
+import { GET_ALL_USERS } from "../../constants/queries";
+import UserRow from "./UserRow/UserRow";
+import CrudUser from "./CrudUser/CrudUser";
 import debounce from "lodash/debounce";
+import { Auth } from "../../firebase";
 
-export const ListClients = (props) => {
+export const ListUsers = (props) => {
   const [filterValue, setFilterValue] = useState(null);
   const [searchValue, setSearchValue] = useState(null);
   const { loading, error, data, refetch } = useQuery(
-    GET_ALL_CLIENTS(gql, filterValue, searchValue)
+    GET_ALL_USERS(gql, filterValue, searchValue)
   );
-  const [isEditClient, setIsEditClient] = useState(false);
-  const [clientEdit, setClientEdit] = useState(null);
-  const [cityList, setCityList] = useState([]);
+  const [isEditUser, setIsEditUser] = useState(false);
+  const [userEdit, setUserEdit] = useState(null);
   const [dropdownState, setDropdownState] = useState(false);
   const inputSearch = useRef(null);
+  const auth = useContext(Auth);
 
   useEffect(() => {
     if (data) getFilter();
   }, [data]);
 
   useEffect(() => {
-    setIsEditClient(isEditClient);
-  }, []);
+    setIsEditUser(isEditUser);
+  }, [isEditUser]);
 
-  const toggleEditItem = (client) => {
-    setIsEditClient(!isEditClient);
-    setClientEdit(client);
+  const toggleEditItem = (user) => {
+    if (user) {
+      if (user.id === auth.sesion.uid) {
+        props.history.push("/perfil");
+      }
+    }
+    setIsEditUser(!isEditUser);
+    setUserEdit(user);
   };
   const getFilter = () => {
-    let array = [];
+    /*let array = [];
 
     if (!cityList.length) {
       let band;
-      client.map((item) => {
+      user.map((item) => {
         band = false;
         array.map((city) => {
           if (item.city === city) {
             band = true;
           }
-          return null;
         });
 
         if (band === false) {
           array.push(item.city);
         }
-        return null;
       });
       setCityList(array);
-    }
+    }*/
   };
   const filter = (item) => {
     setFilterValue(item);
@@ -84,7 +88,7 @@ export const ListClients = (props) => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
-  const { client } = data;
+  const { user } = data;
 
   return (
     <div className="animated fadeIn" key={loading}>
@@ -92,15 +96,15 @@ export const ListClients = (props) => {
         <Col xl={12}>
           <Card className="card-infopedido">
             <CardHeader>
-              <h2 className="title-list">Lista de Clientes</h2>
+              <h2 className="title-list">Lista de Usuarios</h2>
             </CardHeader>
             <CardBody className="cardbody-listproducts">
-              {isEditClient ? (
-                <CrudClient
-                  isOpenModal={isEditClient}
+              {isEditUser ? (
+                <CrudUser
+                  isOpenModal={isEditUser}
                   toggleModal={toggleEditItem}
-                  client={clientEdit}
-                  refetchClient={refetch}
+                  user={userEdit}
+                  refetchUser={refetch}
                 />
               ) : null}
               <div className="nav-list">
@@ -109,8 +113,9 @@ export const ListClients = (props) => {
                     className="btn btn-success"
                     color="success"
                     onClick={() => toggleEditItem(0)}
+                    style={{ minWidth: 127, marginRight: 10 }}
                   >
-                    Agregar Cliente
+                    Agregar Usuario
                   </Button>
                 </div>
                 <div className="nav-filter">
@@ -124,7 +129,7 @@ export const ListClients = (props) => {
                     </DropdownToggle>
                     <DropdownMenu>
                       <DropdownItem header>Filtrar</DropdownItem>
-                      {cityList.map((item, index) => (
+                      {/*cityList.map((item, index) => (
                         <div
                           style={{ textTransform: "capitalize" }}
                           className="dropdown-item"
@@ -133,7 +138,7 @@ export const ListClients = (props) => {
                         >
                           {item}
                         </div>
-                      ))}
+                      ))*/}
                       <DropdownItem onClick={() => filter(null)}>
                         TODOS
                       </DropdownItem>
@@ -168,7 +173,10 @@ export const ListClients = (props) => {
                       Nombre
                     </th>
                     <th scope="col" className="center-tab">
-                      Ciudad
+                      Correo
+                    </th>
+                    <th scope="col" className="center-tab">
+                      Rol
                     </th>
                     <th scope="col" className="center-tab">
                       Telefono
@@ -179,10 +187,10 @@ export const ListClients = (props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {client.map((client, index) => (
-                    <ClientRow
+                  {user.map((user, index) => (
+                    <UserRow
                       key={index}
-                      client={client}
+                      user={user}
                       toggleEdit={toggleEditItem}
                     />
                   ))}

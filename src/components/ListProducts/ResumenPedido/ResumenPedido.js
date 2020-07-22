@@ -23,10 +23,28 @@ export const POST_ORDER = gql`
 `;
 
 export const POST_DETAIL_ORDER = gql`
-  mutation PostDetailOrder($object: [detail_order_insert_input!]!) {
-    insert_detail_order(objects: $object) {
+  mutation PostDetailOrder(
+    $order_id: Int
+    $count: Int
+    $total: numeric
+    $product_id: Int
+    $price: numeric
+  ) {
+    insert_detail_order(
+      objects: {
+        order_id: $order_id
+        count: $count
+        total: $total
+        product_id: $product_id
+        price: $price
+      }
+    ) {
       returning {
         id
+        total
+        price
+        product_id
+        order_id
       }
     }
   }
@@ -34,6 +52,7 @@ export const POST_DETAIL_ORDER = gql`
 
 const ResumenPedido = (props) => {
   const { isOpenModal, toggleModal, toggleModalInfo, getObject } = props;
+  const [state, setState] = useState("initial");
   const [postOrder] = useMutation(POST_ORDER);
   const [postDetailOrder] = useMutation(POST_DETAIL_ORDER);
   const [pedidoObject, setPedidoObject] = useState(getObject());
@@ -42,36 +61,42 @@ const ResumenPedido = (props) => {
   const [subTotal, setSubTotal] = useState(0);
   const [iva, setIva] = useState(0);
   const auth = useContext(Auth);
-
   useEffect(() => {
     sumTotal();
   }, []);
 
   const confirmarPedido = async () => {
+    setState("loading");
     let object = {};
     object.type_list_id = list[0].type_list_id;
     object.client_id = client_id;
-    object.user_id = auth.sesion.uid; //USER
-    object.status_order_id = 1;
+    object.user_id = auth.sesion.uid;
+    object.status_order_id = 1; //status pending
     object.type_pay_id = typePay_id;
     object.total_order = total.toString();
     object.subtotal_order = subTotal.toString();
     if (list[0].type_list_id === 2) {
       object.iva_order = iva.toString();
     }
+    console.log(list);
+
     await postOrder({ variables: { object } }).then((response) => {
-      object = {};
       list.map(async (detail, index) => {
-        object.product_id = detail.id;
-        object.order_id = response.data.insert_order.returning[0].id;
-        object.count = detail.count;
-        object.total = detail.total;
-        await postDetailOrder({ variables: { object } });
-        object = {};
+        await postDetailOrder({
+          variables: {
+            product_id: detail.id,
+            order_id: response.data.insert_order.returning[0].id,
+            count: detail.count,
+            total: detail.total,
+            price: detail.price,
+          },
+        });
       });
     });
+
     toggleModal();
     toggleModalInfo();
+    setState("initial");
   };
 
   const sumTotal = () => {
@@ -130,7 +155,7 @@ const ResumenPedido = (props) => {
           </thead>
           <tbody>
             {list.map((item, index) => (
-              <ProductRowResumen key={index} item={item} list={list} />
+              <ProductRowResumen key={index} item={item} />
             ))}
           </tbody>
         </Table>
@@ -179,6 +204,7 @@ const ResumenPedido = (props) => {
             className="btn btn-success"
             color="primary"
             onClick={() => confirmarPedido()}
+            disabled={state === "loading"}
           >
             Confirmar
           </Button>

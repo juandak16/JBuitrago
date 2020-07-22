@@ -1,14 +1,11 @@
-import React, { Component, useContext, useState } from "react";
-import { Link, Redirect } from "react-router-dom";
+import React, { useContext } from "react";
+import { Redirect } from "react-router-dom";
 import {
   Button,
   Card,
   CardBody,
-  CardGroup,
   Col,
   Container,
-  Form,
-  Input,
   InputGroup,
   InputGroupAddon,
   InputGroupText,
@@ -35,6 +32,7 @@ const Login = (props) => {
           .auth()
           .currentUser.getIdTokenResult()
           .then((idTokenResult) => {
+            console.log(idTokenResult);
             let user = auth.auth().currentUser;
             if (user != null) {
               auth.sesion = {
@@ -130,7 +128,7 @@ const Login = (props) => {
       </Container>
     </div>
   ) : (
-    <Redirect from="/" to="/notaentrega" />
+    <Redirect to="/config" />
   );
 };
 

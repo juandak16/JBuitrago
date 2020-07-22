@@ -1,11 +1,10 @@
-import React, { Component, useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   UncontrolledDropdown,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
-  Button,
   Nav,
   NavItem,
 } from "reactstrap";
@@ -16,8 +15,6 @@ import logo from "../../assets/img/brand/logo-mini.png";
 import sygnet from "../../assets/img/brand/sygnet.svg";
 import { Auth } from "../../firebase";
 
-import CrudItem from "../../components/Items/CrudItem/CrudItem";
-
 const propTypes = {
   children: PropTypes.node,
 };
@@ -26,7 +23,6 @@ const defaultProps = {};
 
 const DefaultHeader = (props) => {
   const auth = useContext(Auth);
-  const { children, ...attributes } = props;
 
   return (
     <React.Fragment>
@@ -94,6 +90,7 @@ const DefaultHeader = (props) => {
           <DropdownToggle nav>
             <div className="account-nav">
               <p className="title-user" style={{ textTransform: "capitalize" }}>
+                {console.log(auth.sesion)}
                 {auth.sesion ? auth.sesion.role : ""}
               </p>
               <i className="icon-user"></i>
@@ -103,30 +100,33 @@ const DefaultHeader = (props) => {
             <DropdownItem header tag="div" className="text-center">
               <strong>Opciones</strong>
             </DropdownItem>
-            {auth.sesion.role == "admin" ? (
-              <DropdownItem>
-                <Link to="/productos" className="nav-link">
-                  Productos
-                </Link>
-              </DropdownItem>
-            ) : null}
+            <DropdownItem>
+              <Link to="/productos" className="nav-link">
+                Productos
+              </Link>
+            </DropdownItem>
             <DropdownItem>
               <Link to="/clientes" className="nav-link">
                 Clientes
               </Link>
             </DropdownItem>
-            {auth.sesion.role == "admin" ? (
-              <DropdownItem>
-                <Link to="/users" className="nav-link">
-                  Personal
-                </Link>
-              </DropdownItem>
-            ) : null}
+
+            <DropdownItem>
+              <Link to="/usuarios" className="nav-link">
+                Personal
+              </Link>
+            </DropdownItem>
+
+            <DropdownItem>
+              <Link to="/config" className="nav-link">
+                Config
+              </Link>
+            </DropdownItem>
             <DropdownItem header tag="div" className="text-center">
               <strong>Cuenta</strong>
             </DropdownItem>
             <DropdownItem>
-              <Link to="/users" className="nav-link">
+              <Link to="/perfil" className="nav-link">
                 <i className="fa fa-user"></i> Perfil
               </Link>
             </DropdownItem>

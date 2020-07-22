@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 const OrderRow = (props) => {
   const { order, toggleViewDetail } = props;
-  const toggleDetailOrder = (id) => {};
   const date = order.date ? new Date(order.date) : null;
 
   const getDate = (timestamp) => {
@@ -29,6 +28,8 @@ const OrderRow = (props) => {
         return "btn-success";
       case 5:
         return "btn-secondary";
+      default:
+        return "btn-primary";
     }
   };
 

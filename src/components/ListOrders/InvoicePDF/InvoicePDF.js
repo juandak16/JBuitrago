@@ -1,12 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Table,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from "reactstrap";
+import React from "react";
+
 //import ProductRowResumen from "../ProductRowResumen/ProductRowResumen";
 import {
   Image,
@@ -17,7 +10,6 @@ import {
   StyleSheet,
   PDFViewer,
 } from "@react-pdf/renderer";
-import Logo from "../../../assets/img/brand/logo.png";
 import Encabezado from "../../../assets/img/brand/encabezado.jpeg";
 
 const styles = StyleSheet.create({
@@ -50,7 +42,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   textBold: {
-    fontWeight: "bold",
     fontWeight: 800,
     fontSize: 12,
     padding: 5,
@@ -156,7 +147,6 @@ const InvoicePDF = (props) => {
     detail_orders,
     id,
     iva_order,
-    status_order,
     subtotal_order,
     total_order,
     type_list_id,

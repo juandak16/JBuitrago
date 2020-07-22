@@ -11,11 +11,13 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap";
 import { gql } from "apollo-boost";
 import { useQuery } from "@apollo/react-hooks";
 import { GET_ALL_PRODUCTS } from "../../constants/queries";
-import InfoPedido from "../ListProducts/InfoPedido/InfoPedido";
 import ItemRow from "./ItemRow/ItemRow";
 import CrudItem from "./CrudItem/CrudItem";
 import debounce from "lodash/debounce";
@@ -23,41 +25,27 @@ import debounce from "lodash/debounce";
 export const ListItems = (props) => {
   const [filterValue, setFilterValue] = useState(null);
   const [searchValue, setSearchValue] = useState(null);
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(100);
+  const [pages, setPages] = useState(0);
   const { loading, error, data, refetch } = useQuery(
-    GET_ALL_PRODUCTS(gql, filterValue, searchValue)
+    GET_ALL_PRODUCTS(gql, filterValue, searchValue, page, limit)
   );
   const [isEditItem, setIsEditItem] = useState(false);
   const [productEdit, setProductEdit] = useState(null);
   const [dropdownState, setDropdownState] = useState(false); //-----
-  const [typesList, setTypesList] = useState([]); //----
   const inputSearch = useRef(null);
-  const getFilter = () => {
-    //------------
-    let array = [];
 
-    if (!typesList.length) {
-      let band;
-      product.map((item) => {
-        band = false;
-
-        array.map((type) => {
-          if (item.type === type) {
-            band = true;
-          }
-        });
-
-        if (band === false) {
-          array.push(item.type);
-        }
-      });
-      setTypesList(array);
-    }
+  const changePage = (value) => {
+    setPage(value);
+    console.log(limit, "-", page, "-", pages);
+    refetch();
   };
 
-  useEffect(() => {
-    //----------
-    if (data) getFilter();
-  }, [data]);
+  const getPages = () => {
+    let countPages = product_aggregate.aggregate.count / limit;
+    countPages ? setPages(countPages) : setPages(1);
+  };
 
   useEffect(() => {
     //-----------
@@ -66,7 +54,7 @@ export const ListItems = (props) => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
-  const { product } = data;
+  const { product, product_aggregate, type_product } = data;
 
   const toggleEditItem = (item) => {
     setIsEditItem(!isEditItem);
@@ -78,7 +66,9 @@ export const ListItems = (props) => {
   };
 
   const filter = (item) => {
-    setFilterValue(item);
+    setPages(0);
+    setPage(0);
+    item ? setFilterValue(item.name) : setFilterValue(null);
     refetch();
     toggleDropDown();
   };
@@ -88,6 +78,8 @@ export const ListItems = (props) => {
     setTimeout(() => {
       if (inputSearch.current) inputSearch.current.focus();
     }, 1000);
+    setPage(0);
+    setPages(0);
   };
 
   return (
@@ -128,14 +120,14 @@ export const ListItems = (props) => {
                     </DropdownToggle>
                     <DropdownMenu>
                       <DropdownItem header>Filtrar</DropdownItem>
-                      {typesList.map((item, index) => (
+                      {type_product.map((item, index) => (
                         <div
                           style={{ textTransform: "capitalize" }}
                           className="dropdown-item"
                           key={index}
                           onClick={() => filter(item)}
                         >
-                          {item}
+                          {item.name}
                         </div>
                       ))}
                       <DropdownItem onClick={() => filter(null)}>
@@ -195,6 +187,79 @@ export const ListItems = (props) => {
                   ))}
                 </tbody>
               </Table>
+              {pages ? (
+                <Pagination className="pagination">
+                  <PaginationItem disabled={page === 0}>
+                    <PaginationLink
+                      previous
+                      tag="button"
+                      onClick={() => changePage(page - 1)}
+                    />
+                  </PaginationItem>
+
+                  {page > 1 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page - 2)}
+                      >
+                        {page - 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+                  {page > 0 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page - 1)}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+
+                  <PaginationItem active>
+                    <PaginationLink
+                      tag="button"
+                      onClick={() => changePage(page)}
+                    >
+                      {page + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+
+                  {page < pages - 1 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page + 1)}
+                      >
+                        {page + 2}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+
+                  {page < pages - 2 ? (
+                    <PaginationItem>
+                      <PaginationLink
+                        tag="button"
+                        onClick={() => changePage(page + 2)}
+                      >
+                        {page + 3}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ) : null}
+
+                  <PaginationItem disabled={page >= pages - 1}>
+                    <PaginationLink
+                      next
+                      tag="button"
+                      onClick={() => changePage(page + 1)}
+                    />
+                  </PaginationItem>
+                </Pagination>
+              ) : (
+                getPages()
+              )}
             </CardBody>
           </Card>
         </Col>

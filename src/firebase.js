@@ -6,42 +6,10 @@ import * as firebase from "firebase/app";
 // Add the Firebase services that you want to use
 import "firebase/auth";
 import "firebase/database";
+import "firebase/functions";
 
-// Initialize Firebase
-
-/*
--------------CREATE USER------------
-firebase
-  .auth()
-  .createUserWithEmailAndPassword("juandak16@gmail.com", "pollitopio")
-  .catch(function (error) {
-    // Handle Errors here.
-    var errorCode = error.code;
-    var errorMessage = error.message;
-    // ...
-  });
-
---------- CHANGE PASSWORD----------
-  auth.auth().onAuthStateChanged(async (user) => {
-  if (user) {
-    console.log(user);
-    var user = await auth.auth().currentUser;
-    user
-      .updatePassword("532525")
-      .then(function () {
-        console.log("se cambio la clave");
-      })
-      .catch(function (error) {
-        var errorMessage = error.message;
-        alert(errorMessage);
-      });
-    console.log(user);
-  } else {
-    console.log(user);
-  }
-});
-*/
 export const Auth = React.createContext("");
+export const Auth2 = React.createContext("");
 
 const firebaseConfig = {
   apiKey: "AIzaSyBWJBoi_F8NJo_jnhz7xMBjZJuTFEcxlyY",

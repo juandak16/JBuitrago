@@ -28,20 +28,23 @@ const InfoPedido = (props) => {
 
   useEffect(() => {
     setNewList(list.map(JSON.parse));
-  }, []);
+  }, [list]);
 
   useEffect(() => {
     if (data) getClients();
   }, [data]);
 
   const getClients = () => {
-    let obj = {
-      id: 0,
-      name: "",
-    };
-    client.unshift(obj);
+    /*
+      let obj = {
+        id: 0,
+        name: "",
+      };
+      client.unshift(obj);
+    */
     client.map((item) => {
       item.value = item.id.toString();
+      return null;
     });
     setListClients(client);
   };

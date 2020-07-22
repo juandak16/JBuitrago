@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "reactstrap";
 
 const ClientRow = (props) => {
@@ -8,16 +8,10 @@ const ClientRow = (props) => {
       <th className="capitalize center-tab">
         {client.rif_type}-{client.rif_number}
       </th>
-      <td
-        scope="row"
-        className="capitalize center-tab"
-        style={{ minWidth: 300 }}
-      >
+      <td className="capitalize center-tab" style={{ minWidth: 300 }}>
         {client.name}
       </td>
-      <td scope="row" className=" capitalize center-tab">
-        {client.city}
-      </td>
+      <td className=" capitalize center-tab">{client.city}</td>
       <td className="capitalize center-tab">{client.phone}</td>
       <td className="actions-buttons">
         <Button

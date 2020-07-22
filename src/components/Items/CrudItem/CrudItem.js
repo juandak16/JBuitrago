@@ -1,18 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Button,
-  Table,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from "reactstrap";
+import React, { useState, useRef, useEffect } from "react";
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import { AppSwitch } from "@coreui/react";
-import { GET_LIST } from "../../../constants/queries";
+import { GET_CRUD_PRODUCT } from "../../../constants/queries";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import ConfirmationModal from "../../ConfirmationModal";
 import UploadModal from "../../UploadModal";
+import SelectSearch from "react-select-search";
 
 export const INSERT_PRODUCTS = gql`
   mutation InsertProducts($objects: [product_insert_input!]!) {
@@ -25,10 +19,10 @@ export const INSERT_PRODUCTS = gql`
           code
           price
           state
-          type
           type_list_id
+          type_product
         ]
-        constraint: product_pkey
+        constraint: product_id_key
       }
     ) {
       returning {
@@ -45,6 +39,8 @@ export const INSERT_PRODUCT = gql`
     $type_list_id: Int
     $price: numeric
     $state: Boolean
+    $id: Int
+    $type_product: String
   ) {
     insert_product(
       objects: {
@@ -54,6 +50,8 @@ export const INSERT_PRODUCT = gql`
         trademark: $trademark
         type_list_id: $type_list_id
         state: $state
+        id: $id
+        type_product: $type_product
       }
     ) {
       returning {
@@ -71,6 +69,7 @@ export const UPDATE_PRODUCT = gql`
     $price: numeric
     $id: Int
     $state: Boolean
+    $type_product: String
   ) {
     update_product(
       where: { id: { _eq: $id } }
@@ -81,6 +80,7 @@ export const UPDATE_PRODUCT = gql`
         trademark: $trademark
         type_list_id: $type_list_id
         state: $state
+        type_product: $type_product
       }
     ) {
       returning {
@@ -92,10 +92,15 @@ export const UPDATE_PRODUCT = gql`
 
 const CrudItem = (props) => {
   const { isOpenModal, toggleModal, product, refetchProduct } = props;
-  const { loading, error, data } = useQuery(GET_LIST(gql));
+
+  const { loading, error, data } = useQuery(GET_CRUD_PRODUCT(gql));
+
+  const [state, setState] = useState("initial");
   const [insertProducts] = useMutation(INSERT_PRODUCTS);
   const [insertProduct] = useMutation(INSERT_PRODUCT);
   const [updateProduct] = useMutation(UPDATE_PRODUCT);
+  const [listTypesProducts, setListTypesProducts] = useState([]);
+  const [typeName, setTypeName] = useState(null);
   const [isConfirmation, setIsConfirmation] = useState(false);
   const [isUpload, setIsUpload] = useState(false);
   const listRef = useRef(null);
@@ -103,10 +108,29 @@ const CrudItem = (props) => {
   const codeRef = useRef(null);
   const trademarkRef = useRef(null);
   const priceRef = useRef(null);
+  const idRef = useRef(null);
   const stateRef = useRef(null);
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-  const { type_list } = data;
+
+  useEffect(() => {
+    if (data) getTypes();
+  }, [data]);
+
+  const getTypes = () => {
+    console.log(type_product);
+    //console.log(client);
+    /*
+      let obj = {
+        id: 0,
+        name: "",
+      };
+      client.unshift(obj);
+    */
+    type_product.map((item) => {
+      item.value = item.name;
+      return null;
+    });
+    setListTypesProducts(type_product);
+  };
 
   const countChange = () => {
     if (priceRef.current.value < 0) {
@@ -120,12 +144,15 @@ const CrudItem = (props) => {
     setIsUpload(!isUpload);
   };
   const checkedItem = () => {
+    console.log(typeName);
     if (
       listRef.current.value !== "0" &&
       descripcionRef.current.value &&
       codeRef.current.value &&
       trademarkRef.current.value &&
-      priceRef.current.value
+      priceRef.current.value &&
+      idRef.current.value &&
+      typeName
     ) {
       toggleConfirmationModal();
     } else {
@@ -137,7 +164,7 @@ const CrudItem = (props) => {
     console.log(products);
     console.log(error);
     let str;
-    error != ""
+    error !== ""
       ? alert(
           `Se cargaron ${
             products.length
@@ -161,7 +188,9 @@ const CrudItem = (props) => {
   };
 
   const crudItem = async () => {
+    setState("loading");
     toggleConfirmationModal();
+    console.log();
     if (product) {
       await updateProduct({
         variables: {
@@ -172,6 +201,7 @@ const CrudItem = (props) => {
           price: priceRef.current.value,
           id: product.id,
           state: stateRef.current.state.checked,
+          type_product: typeName,
         },
       });
     } else {
@@ -182,14 +212,20 @@ const CrudItem = (props) => {
           description: descripcionRef.current.value.toString(),
           type_list_id: listRef.current.value,
           price: priceRef.current.value,
+          id: idRef.current.value,
           state: stateRef.current.state.checked,
+          type_product: typeName,
         },
       });
     }
 
     await refetchProduct();
     toggleModal();
+    setState("initial");
   };
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
+  const { type_list, type_product } = data;
   return (
     <Modal
       isOpen={isOpenModal}
@@ -229,27 +265,6 @@ const CrudItem = (props) => {
             </div>
           </div>
 
-          {
-            // ¿Esta seguro que desea {word} el {wordtwo}?
-            isConfirmation ? (
-              <ConfirmationModal
-                isOpenModal={isConfirmation}
-                toggleModal={toggleConfirmationModal}
-                color={"primary"}
-                word={product ? "editar" : "crear"}
-                wordtwo={"producto"}
-                confirm={crudItem}
-              />
-            ) : null
-          }
-          {isUpload ? (
-            <UploadModal
-              isOpenModal={isUpload}
-              toggleModal={toggleUploadModal}
-              type_list={type_list}
-              confirm={importListProducts}
-            />
-          ) : null}
           <div className="container-label-crudItem">
             <div className="label-crudItem">
               <p>Descripción:</p>
@@ -285,7 +300,7 @@ const CrudItem = (props) => {
 
           <div className="container-label-crudItem">
             <div className="label-crudItem">
-              <p>Marca:</p>
+              <p>ID:</p>
             </div>
             <input
               //accessKey={index}
@@ -293,12 +308,13 @@ const CrudItem = (props) => {
               className="input-crudItem"
               aria-label="cantidad"
               aria-describedby="basic-addon1"
-              defaultValue={product ? product.trademark : null}
-              ref={trademarkRef}
+              defaultValue={product ? product.id : null}
+              ref={idRef}
               //onChange={() => countChange(count)}
             />
           </div>
         </div>
+
         <div className="container-crudItem">
           <div className="container-label-crudItem">
             <div className="label-crudItem">
@@ -315,12 +331,33 @@ const CrudItem = (props) => {
               onChange={() => countChange()}
             />
           </div>
+
+          <div className="container-label-crudItem">
+            <div className="label-crudItem">
+              <p>Marca:</p>
+            </div>
+            <input
+              //accessKey={index}
+              type="text"
+              className="input-crudItem"
+              aria-label="cantidad"
+              aria-describedby="basic-addon1"
+              defaultValue={product ? product.trademark : null}
+              ref={trademarkRef}
+              //onChange={() => countChange(count)}
+            />
+          </div>
+        </div>
+
+        <div className="container-crudItem">
           <div
             className="container-label-crudItem"
             style={{
               flexDirection: "row",
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
+              marginTop: 15,
             }}
           >
             <div className="label-crudItem" style={{ marginRight: 20 }}>
@@ -356,6 +393,19 @@ const CrudItem = (props) => {
               />
             )}
           </div>
+          <div className="container-label-crudItem">
+            <div className="label-crudItem">
+              <p>Tipo de Producto:</p>
+            </div>
+            <SelectSearch
+              onChange={(value) => setTypeName(value)}
+              value={product ? product.type_product : null}
+              placeholder="Selecciona"
+              options={listTypesProducts}
+              search
+              className="select-search"
+            />
+          </div>
         </div>
       </ModalBody>
       <ModalFooter className="footer-crudItem">
@@ -375,16 +425,47 @@ const CrudItem = (props) => {
           </Button>
 
           {product ? (
-            <Button color="warning" onClick={() => checkedItem()}>
+            <Button
+              color="warning"
+              onClick={() => checkedItem()}
+              disabled={state === "loading"}
+            >
               Editar
             </Button>
           ) : (
-            <Button color="success" onClick={() => checkedItem()}>
+            <Button
+              color="success"
+              onClick={() => checkedItem()}
+              disabled={state === "loading"}
+            >
               Agregar
             </Button>
           )}
         </div>
       </ModalFooter>
+      {
+        // ¿Esta seguro que desea {word} el {wordtwo}?
+        isConfirmation ? (
+          <ConfirmationModal
+            isOpenModal={isConfirmation}
+            toggleModal={toggleConfirmationModal}
+            color={"primary"}
+            word={product ? "editar" : "crear"}
+            wordtwo={"producto"}
+            confirm={crudItem}
+            state={state}
+          />
+        ) : null
+      }
+      {isUpload ? (
+        <UploadModal
+          isOpenModal={isUpload}
+          toggleModal={toggleUploadModal}
+          type_list={type_list}
+          confirm={importListProducts}
+          listTypesProducts={listTypesProducts}
+        />
+      ) : null}
     </Modal>
   );
 };
